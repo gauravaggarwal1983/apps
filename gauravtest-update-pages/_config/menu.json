@@ -1,0 +1,9 @@
+{
+  "menu-first-gauravtest-update-pages": {
+      "weight": 100000,
+      "title": "Update Pages",
+      "attr": {
+          "href": "index.html"
+      }
+  }
+}

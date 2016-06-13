@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+	<head>
+        <title>API page</title>
+		<meta charset="utf-8">
+    	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+    	<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link rel="stylesheet" href="//cdn.worldsecuresystems.com/resources/bc-api-discovery/_System/apps/bc-api-discovery/css/bootstrap-3.2.0.css">
+		<link rel="stylesheet" href="//cdn.worldsecuresystems.com/resources/bc-api-discovery/_System/apps/bc-api-discovery/css/bootstrap-theme-3.2.0.css">
+		<link rel="stylesheet" href="//cdn.worldsecuresystems.com/resources/bc-api-discovery/_System/apps/bc-api-discovery/css/selectize.css">
+		<link rel="stylesheet" href="//cdn.worldsecuresystems.com/resources/bc-api-discovery/_System/apps/bc-api-discovery/css/selectize.default.css">
+		<link rel="stylesheet" href="//cdn.worldsecuresystems.com/resources/bc-api-discovery/_System/apps/bc-api-discovery/css/selectize.legacy.css">
+		<link rel="stylesheet" href="//cdn.worldsecuresystems.com/resources/bc-api-discovery/_System/apps/bc-api-discovery/css/selectize.bootstrap3.css">
+		<link rel="stylesheet" href="//cdn.worldsecuresystems.com/resources/bc-api-discovery/_System/apps/bc-api-discovery/libs/highlight-8.4/styles/github.css">
+        <script type="text/javascript" src="//code.jquery.com/jquery-1.10.2.min.js"></script>
+		<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.3.1/jquery.cookie.min.js"></script>
+		<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.5.1/underscore-min.js"></script>
+		<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/backbone.js/1.0.0/backbone-min.js"></script>
+		<script type="text/javascript" src="//cdn.worldsecuresystems.com/bcapi/bcapi-0.1.0.min.js"></script>
+		<link rel="stylesheet" href="css/app.css">
+           <meta name="description" content="Page update at one go." /> 
+    </head>
+    <body>
+        <!-- Created by Gaurav Aggarwal for Business Catalyst -->
+        
+         <h1> UPDATE PAGES ON THE FLY </h1> 
+        <h2> Once you have updated pages please go to bottom and click on 'Update' button. Page will refresh once request completes. </h2>
+        <div> <b> Current Status &nbsp;&nbsp;&nbsp; *true = Page Enabled&nbsp;&nbsp;&nbsp;*False = Page Disabled </b></div>
+        <table border="1" class="addhere" style="width:100%;text-align:center">
+            <tr>
+                <th>Page name </th>
+            	<th> Page ID</th>
+            	<th> Page URL </th>
+            	<th> Current Status </th>
+                <th> Check All <input class="checkall" type=checkbox></th>
+            </tr>
+         </table>
+        <button id="update1"> Update </button>
+        <script>
+    		var testarray = [];        //array to be used later.
+            var testarray1 = []; //array to be used later.
+            var arraypopped = []; //array to be used to pop system pages off the array.
+            // Data fetched using API
+            var access_token = BCAPI.Helper.Site.getAccessToken();
+    var x = $.ajax({
+    url: "/webresources/api/v3/sites/current/pages?fields=id,name,enabled,pageUrl&skip=0&limit=500&order=id",
+    type: "GET",
+    connection: "keep-alive",
+    contentType: "application/json",
+    mimeType: "application/json ",
+    headers: {
+        "Authorization": $.cookie('access_token')
+    }
+});
+x.done(function (msg) {
+    console.log(msg);
+    //Created the table with checkbox checked/unchecked based on Enabled state. 
+    $.each(msg.items,function(i,val){
+        var ab= val.pageUrl;
+        var ba= ab.indexOf("/_System");//fetch if URL contains _System 
+        var ca= ab.indexOf("/Layouts");//fetch if URL contains _Layouts 
+        console.log(ba);
+        if(ba!=-1||ca!=-1) //if Page URL contains _System or Layouts the page will not be listed.
+           { return;
+        }      
+        else{ 
+            arraypopped.push({value:val.id,checkbox:val.enabled})
+            var y= i+1;
+             if(val.enabled===true)
+        {
+          $('.addhere').append("<tr class= 'tval'>" + "<td class='valname'>"  + val.name + "</td>" + "<td class='tdvalue'>" + val.id + "</td>" + "<td>"  
+          + val.pageUrl + "</td>" + "<td>" + val.enabled + "</td>" + "<td class='tvalid'> <input class='boxt' type=checkbox checked='checked'> </td>" + "</tr>")
+        }
+          else
+        { $('.addhere').append("<tr class='tval'>" + "<td>"  + val.name + "</td>" + "<td class='tdvalue'>" + val.id + "</td>" + "<td>"
+          + val.pageUrl+ "</td>"+ "<td>" + val.enabled + "</td>" + "<td class='tvalid'> <input class='boxt' type=checkbox > </td>" + "</tr>")
+        } 
+         }    
+            })
+console.log(arraypopped);        
+//check all to enabling/disabling all pages one on click.
+$('.checkall').change(function(){
+    testarray = [];   //emptying the array
+    checkallval= $(this).is(':checked');
+    alert("Please go to bottom and click on update");
+    if(checkallval==true) //set all pages property to Enabled. 
+    { $('.boxt').prop("checked","checked");
+     $.each(arraypopped,function(l,testarray1){
+          testarray1.enabled==true; 
+         testarray.push({value:testarray1.value, checkbox: true});          
+     })
+     console.log(testarray);    }
+        else {
+            $('.boxt').prop("checked","");   //else set all pages property to Disable.
+    $.each(arraypopped,function(l,testarray1){
+          testarray1.enabled==false; 
+         testarray.push({value:testarray1.value, checkbox: false});          
+     })
+    console.log(testarray);
+        }
+    })
+    //upon change in checkbox value create an array and fetch page ID along with status to be udpated to.
+$('.boxt').change(function() {
+    var xy = $(this).closest('tr').find('.tdvalue').text();
+    var yz = $(this).is(':checked');                                         
+    //   alert("value is:" + xy + " And checkbox value is:" + yz);  A Test function added to get alert(not required now).
+    testarray.push({value : xy, checkbox : yz});
+    console.log(testarray);
+   })
+})
+x.fail(function (jqXHR) {
+    console.log("Request failed.");
+    console.log("Error code: " + jqXHR.status);
+    console.log("Error text: " + jqXHR.statusText);
+    console.log("Response text: " + jqXHR.responseText);
+})
+
+$('#update1').click(function(){
+     var requestArray = [];
+$.each(testarray,function (k,valu){		
+	var count = testarray.length;
+    var checkloop = k+1;
+    var valkor = "/webresources/api/v3/sites/current/pages/" + valu.value;
+    var valkis = valu.checkbox;
+    requestArray.push(
+ $.ajax({
+        url: valkor,
+        processData: false,
+  data: JSON.stringify({
+  	 	"enabled" : valkis
+    }),
+  type: "PUT",    
+  contentType: "application/json",
+  mimeType: "application/json ",
+  headers: {
+     "Authorization": $.cookie('access_token')
+  },
+       success:function (msg) {
+    console.log("successfully updated"); 
+        },
+    fail: function (jqXHR) {
+    console.log("Request failed.");
+    console.log("Error code: " + jqXHR.status);
+    console.log("Error text: " + jqXHR.statusText);
+    console.log("Response text: " + jqXHR.responseText);
+}
+}) 	)
+});
+    $.when.apply($, requestArray).done(function(){
+        location.reload(true);
+    });
+})
+  </script>
+       </body>
+</html>
